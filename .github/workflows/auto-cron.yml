@@ -1,14 +1,9 @@
-name: Deploy to GitHub Pages
+name: Auto Deploy (Cron)
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'updates/**'
-      - '.github/workflows/deploy-pages.yml'
+  schedule:
+    - cron: '*/15 * * * *'
   workflow_dispatch:
-  issues:
-    types: [opened]
 
 permissions:
   contents: read
@@ -16,26 +11,38 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-auto"
   cancel-in-progress: true
 
 jobs:
   build:
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && contains(github.event.issue.title, 'Deploy site')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (main)
         uses: actions/checkout@v4
         with:
           ref: main
+      - name: Check auto deploy flag
+        id: check
+        run: |
+          ENABLED=false
+          if [ -f updates/auto-deploy.json ]; then
+            if grep -qi '"enabled"\s*:\s*true' updates/auto-deploy.json; then
+              ENABLED=true
+            fi
+          fi
+          echo "AUTO_ENABLED=$ENABLED" >> $GITHUB_ENV
       - name: Setup Pages
+        if: ${{ env.AUTO_ENABLED == 'true' }}
         uses: actions/configure-pages@v5
       - name: Upload artifact
+        if: ${{ env.AUTO_ENABLED == 'true' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: updates
   deploy:
     needs: build
+    if: ${{ env.AUTO_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages

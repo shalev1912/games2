@@ -1,0 +1,63 @@
+name: Toggle Auto Deploy
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  toggle:
+    if: ${{ contains(github.event.issue.title, 'Auto deploy: enable') || contains(github.event.issue.title, 'Auto deploy: disable') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+      - name: Toggle auto deploy flag
+        id: toggle
+        run: |
+          TITLE="${{ github.event.issue.title }}"
+          if echo "$TITLE" | grep -qi "enable"; then
+            VALUE=true
+          else
+            VALUE=false
+          fi
+          mkdir -p updates
+          echo "{\n  \"enabled\": $VALUE\n}" > updates/auto-deploy.json
+          if git diff --quiet -- updates/auto-deploy.json; then
+            echo "nochange=true" >> $GITHUB_OUTPUT
+          else
+            git add updates/auto-deploy.json
+            git commit -m "chore(auto): set auto-deploy to $VALUE via issue"
+            git push
+            echo "nochange=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Comment and close issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const nochange = core.getInput('nochange') === 'true'
+            const body = nochange ? 'Auto deploy was already in the requested state.' : 'Auto deploy state updated.'
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            })
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            })
+        env:
+          nochange: ${{ steps.toggle.outputs.nochange }}
+
