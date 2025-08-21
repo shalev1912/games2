@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>games2</title>
+    <style>
+      body{font-family:Segoe UI,Arial,sans-serif;margin:40px;line-height:1.6;color:#111}
+      .container{max-width:800px;margin:auto}
+      h1{margin:0 0 8px 0}
+      .muted{color:#666}
+      .card{border:1px solid #e3e3e3;border-radius:10px;padding:18px;margin-top:20px}
+      code{background:#f7f7f7;padding:2px 6px;border-radius:6px}
+      a{color:#0366d6;text-decoration:none}
+      a:hover{text-decoration:underline}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>games2</h1>
+      <div class="muted">פריסה אוטומטית מ־branch: <b>main</b></div>
+
+      <div class="card">
+        <h2>איך זה עובד?</h2>
+        <p>
+          כל עדכון לקבצים תחת <code>site/</code> ב־branch <b>main</b> מפעיל
+          פריסה אוטומטית ל־GitHub Pages. אפשר גם להפעיל ידנית דרך Actions.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>עדכון ידני</h2>
+        <ol>
+          <li>בצעו שינוי בקבצים תחת <code>site/</code> ושמרו.</li>
+          <li>הפעילו סנכרון: <code>scripts/git-sync.bat "הודעת קומיט"</code>.</li>
+          <li>להרצה ידנית של הפריסה: GitHub → Actions → Deploy to GitHub Pages → Run workflow.</li>
+        </ol>
+      </div>
+
+      <p class="muted" id="ts"></p>
+    </div>
+    <script>
+      const el=document.getElementById('ts');
+      const now=new Date();
+      el.textContent='נבנה בתאריך: '+now.toLocaleString('he-IL');
+    </script>
+  </body>
+  </html>
+
