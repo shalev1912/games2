@@ -1,4 +1,5 @@
 const http = require('http');
+const os = require('os');
 const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 8080;
@@ -142,8 +143,19 @@ serverWss.on('connection', (ws) => {
 	});
 });
 
-httpServer.listen(PORT, () => {
-	console.log(`WS server listening on :${PORT}`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+	const ifaces = os.networkInterfaces();
+	const addrs = [];
+	for (const name of Object.keys(ifaces)) {
+		for (const info of ifaces[name] || []) {
+			if (info.family === 'IPv4' && !info.internal) addrs.push(info.address);
+		}
+	}
+	console.log(`WS server listening on 0.0.0.0:${PORT}`);
+	if (addrs.length) {
+		console.log('Accessible on LAN:');
+		for (const a of addrs) console.log(`  ws://${a}:${PORT}`);
+	}
 });
 
 

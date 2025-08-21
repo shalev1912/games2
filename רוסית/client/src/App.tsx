@@ -8,7 +8,13 @@ type Snapshot = {
 }
 
 export default function App() {
-  const [serverUrl, setServerUrl] = useState('ws://localhost:8080')
+  const defaultWs = useMemo(() => {
+    // Try to auto-derive WS URL from current page host
+    const { protocol, hostname } = window.location
+    const wsProto = protocol === 'https:' ? 'wss' : 'ws'
+    return `${wsProto}://${hostname}:8080`
+  }, [])
+  const [serverUrl, setServerUrl] = useState(defaultWs)
   const [name, setName] = useState('')
   const [category, setCategory] = useState<'אוכל'|'חיות'|'תחבורה'|'הכל'>('הכל')
   const [connected, setConnected] = useState(false)
