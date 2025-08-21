@@ -7,6 +7,8 @@ on:
       - 'site/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
+  issues:
+    types: [opened]
 
 permissions:
   contents: read
@@ -19,6 +21,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && contains(github.event.issue.title, 'Deploy site')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
